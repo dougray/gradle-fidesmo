@@ -1,0 +1,41 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }   
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.fidesmo:gradle-javacard:0.2-SNAPSHOT'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+}
+
+
+group 'com.fidesmo'
+version '0.1-SNAPSHOT'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.project {
+                name 'Gradle fidesmo plugin'
+                description 'Gradle plugin for easy development and deplyoment of java cardlets with the fidesmo service'
+                url 'https://github.com/fidesmo/gradle-plugin'
+                inceptionYear '2014'
+                artifactId 'gradle-fidesmo'
+            }
+        }
+    }
+}
+
+
+
+
+
