@@ -44,10 +44,6 @@ class FidesmoPlugin implements Plugin<Project> {
         }
     }
 
-    private String getFidesmoAppId(Project project) {
-        getPropertieOrRead(project, FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
-    }
-
     private String getFidesmoAppKey(Project project) {
         getPropertieOrRead(project, FIDESMO_APP_KEY, "\nPlease specify fidesmo app key: ")
     }
@@ -58,8 +54,14 @@ class FidesmoPlugin implements Plugin<Project> {
             project.plugins.apply(JavacardPlugin)
         }
 
+        def fidesmoExtension = project.extensions.create(FidesmoExtension.NAME, FidesmoExtension)
+        project.afterEvaluate {
+            fidesmoExtension.validate()
+        }
+
+
         project.getExtensions().findByType(JavacardExtension).metaClass.withFidesmoPrefix = { suffix ->
-            String appId = getFidesmoAppId(project)
+            String appId = fidesmoExtension.appId
             String appIdSegment = [ appId[0..1], appId[2..3], appId[4..5], appId[6..7] ].collect { nibble ->
                 "0x${nibble}" }.join(':')
 
@@ -84,7 +86,7 @@ class FidesmoPlugin implements Plugin<Project> {
                 http.request(POST, JSON) {
                     uri.path = '/executableLoadFiles'
 
-                    headers.app_id = getFidesmoAppId(project)
+                    headers.app_id = fidesmoExtension.appId
                     headers.app_key = getFidesmoAppKey(project)
 
                     requestContentType = BINARY
