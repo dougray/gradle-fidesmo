@@ -20,13 +20,15 @@ package com.fidesmo.gradle.plugin
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.GradleException
+
 
 import com.fidesmo.gradle.javacard.JavacardPlugin
 import com.fidesmo.gradle.javacard.JavacardExtension
 
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
+import retrofit.*
+import retrofit.mime.TypedFile
+import retrofit.RequestInterceptor.RequestFacade
 
 class FidesmoPlugin implements Plugin<Project> {
 
@@ -78,28 +80,35 @@ class FidesmoPlugin implements Plugin<Project> {
             dependsOn(project.convertJavacard)
 
             doLast {
+                def restAdapter = new RestAdapter.Builder()
+                   .setEndpoint('https://api.fidesmo.com')
+                   .setRequestInterceptor(
+                       new RequestInterceptor(){
+                           void intercept(RequestFacade request) {
+                               // work-around for http://jira.codehaus.org/browse/GROOVY-6885
+                               // should be FidesmoPlugin.this instead or maybe directly this
+                               def fidesmoPlugin = project.plugins.findPlugin(FidesmoPlugin)
+                               request.addHeader('app_id', fidesmoPlugin.getFidesmoAppId(project))
+                               request.addHeader('app_key', fidesmoPlugin.getFidesmoAppKey(project))
+                           }
+                       })
+                   .setErrorHandler(
+                       new ErrorHandler(){
+                           Throwable handleError(RetrofitError cause) {
+                               if (cause.isNetworkError()) {
+                                   new GradleException("An network related error occured while uploading the cap file", cause)
+                               } else {
+                                   cause
+                               }
+                           }
+                       })
+                   .build();
+                
+                def fidesmoService = restAdapter.create(FidesmoService.class);
+                def response = fidesmoService.uploadExecutableLoadFile(
+                    new TypedFile('application/octet-stream', project.convertJavacard.getCapFile()))
 
-                def http = new HTTPBuilder('https://api.fidesmo.com')
-
-                http.request(POST, JSON) {
-                    uri.path = '/executableLoadFiles'
-
-                    headers.app_id = getFidesmoAppId(project)
-                    headers.app_key = getFidesmoAppKey(project)
-
-                    requestContentType = BINARY
-                    body = project.convertJavacard.getCapFile().bytes
-
-                    response.success = { resp, json ->
-                        logger.info('Executable load file was uploaded succesfull and is available as' +
-                                    "aid: ${json.packageAid}")
-                    }
-
-                    response.failure = { resp ->
-                        logger.error('Executable load file could not be stored server responded' +
-                                     "'${resp.statusLine}' caused by '${resp.entity.content.text}'")
-                    }
-                }
+                println(response.body.in().text)
             }
         }
     }
