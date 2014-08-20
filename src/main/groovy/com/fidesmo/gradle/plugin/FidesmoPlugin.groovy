@@ -80,11 +80,8 @@ class FidesmoPlugin implements Plugin<Project> {
            .setRequestInterceptor(
                new RequestInterceptor(){
                    void intercept(RequestFacade request) {
-                       // work-around for http://jira.codehaus.org/browse/GROOVY-6885
-                       // should be FidesmoPlugin.this instead or maybe directly this
-                       def fidesmoPlugin = project.plugins.findPlugin(FidesmoPlugin)
-                       request.addHeader('app_id', fidesmoPlugin.getFidesmoAppId(project))
-                       request.addHeader('app_key', fidesmoPlugin.getFidesmoAppKey(project))
+                       request.addHeader('app_id', getFidesmoAppId(project))
+                       request.addHeader('app_key', getFidesmoAppKey(project))
                    }
                })
            .setErrorHandler(
@@ -95,7 +92,7 @@ class FidesmoPlugin implements Plugin<Project> {
                        } else {
                            try {
                                def errorMessage = cause.response.body.in().text
-                               new GradleException("The server reject the operation with ${errorMessage}", cause)
+                               new GradleException("The fidemo server aborted the operation with '${errorMessage}'", cause)
                            } catch(any) {
                                cause
                            }
@@ -176,6 +173,20 @@ class FidesmoPlugin implements Plugin<Project> {
                 // TODO: assert values
                 println(response.executableLoadFile)
                 println(response.executableModules)
+            }
+        }
+
+        project.tasks.create('deleteFromLocalCard') {
+            group = 'publish'
+            description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
+
+            doLast {
+                // TODO: make configurable
+                def ccmDelete = new CcmDelete()
+                ccmDelete.application = 'a000000617009bc07ddb0101'
+
+                def response = getFidesmoService(project).deleteExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmDelete)
+                executeOperation(response.operationId)
             }
         }
 

@@ -15,21 +15,9 @@
  *
  */
 
-package com.fidesmo.gradle.plugin
+package com.fidesmo.gradle.plugin.models
 
-
-import retrofit.http.*
-import retrofit.client.Response
-import retrofit.mime.TypedFile
-import com.fidesmo.gradle.plugin.models.*
-
-public interface FidesmoService {
-    @POST('/executableLoadFiles')
-    ElfReceiveSuccess uploadExecutableLoadFile(@Body TypedFile file)
-
-    @PUT('/ccm/install')
-    OperationAccepted installExecutableLoadFile(@Header('callbackUrl') String callbackUrl, @Body CcmInstall install)
-
-    @PUT('/ccm/delete')
-    OperationAccepted deleteExecutableLoadFile(@Header('callbackUrl') String callbackUrl, @Body CcmDelete delete)
+public class CcmDelete {
+    String application
 }
+
