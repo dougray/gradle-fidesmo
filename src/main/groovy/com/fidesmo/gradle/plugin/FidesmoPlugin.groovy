@@ -40,7 +40,12 @@ import javax.smartcardio.*
 
 import com.fidesmo.gradle.plugin.models.*
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class FidesmoPlugin implements Plugin<Project> {
+
+    Logger logger = LoggerFactory.getLogger(this.getClass())
 
     public static final String FIDESMO_RID = '0xa0:0x00:0x00:0x06:0x17'
     public static final String FIDESMO_APP_ID = 'fidesmoAppId'
