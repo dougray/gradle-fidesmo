@@ -20,19 +20,41 @@ package com.fidesmo.gradle.plugin
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.GradleException
 
 import com.fidesmo.gradle.javacard.JavacardPlugin
 import com.fidesmo.gradle.javacard.JavacardExtension
 
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
+import com.fidesmo.sec.client.Client
+import com.fidesmo.sec.client.ClientCallback
+import com.fidesmo.sec.transceivers.AbstractTransceiver
+
+import retrofit.*
+import retrofit.mime.TypedFile
+import retrofit.RequestInterceptor.RequestFacade
+
+import java.util.UUID
+
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
+import javax.smartcardio.*
+
+import com.fidesmo.gradle.plugin.models.*
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class FidesmoPlugin implements Plugin<Project> {
+
+    Logger logger = LoggerFactory.getLogger(this.getClass())
 
     public static final String FIDESMO_RID = '0xa0:0x00:0x00:0x06:0x17'
     public static final String FIDESMO_APP_ID = 'fidesmoAppId'
     public static final String FIDESMO_APP_KEY = 'fidesmoAppKey'
+
+    // TODO: add as input property of card interaction tasks (an abstract class that needs to be created)
+    def cardTimeout = 10
 
     private String getPropertieOrRead(Project project, String key, String msg) {
         if (project.hasProperty(key)) {
@@ -52,54 +74,135 @@ class FidesmoPlugin implements Plugin<Project> {
         getPropertieOrRead(project, FIDESMO_APP_KEY, "\nPlease specify fidesmo app key: ")
     }
 
+    def getFidesmoService(Project project) {
+        def restAdapter = new RestAdapter.Builder()
+           .setEndpoint('https://api.fidesmo.com')
+           .setRequestInterceptor(
+               new RequestInterceptor(){
+                   void intercept(RequestFacade request) {
+                       request.addHeader('app_id', getFidesmoAppId(project))
+                       request.addHeader('app_key', getFidesmoAppKey(project))
+                   }
+               })
+           .setErrorHandler(
+               new ErrorHandler(){
+                   Throwable handleError(RetrofitError cause) {
+                       if (cause.isNetworkError()) {
+                           new GradleException('An network related error occured while uploading the cap file', cause)
+                       } else {
+                           try {
+                               def errorMessage = cause.response.body.in().text
+                               new GradleException("The fidemo server aborted the operation with '${errorMessage}'", cause)
+                           } catch(any) {
+                               cause
+                           }
+                       }
+                   }
+               })
+           .build();
+
+        restAdapter.create(FidesmoService.class)
+    }
+
+    def executeOperation(UUID operationId) {
+        logger.info("Starting fidesmo sec-client to execute operation '${operationId}'")
+        def latch = new CountDownLatch(1)
+        def client = Client.getInstance(
+            operationId,
+            new AbstractTransceiver() {
+                Card card
+                public byte[] open() {
+                    TerminalFactory factory = TerminalFactory.default
+                    List<CardTerminal> terminalsWithCard = factory.terminals().list(CardTerminals.State.CARD_PRESENT)
+                    if (terminalsWithCard.size() == 0) {
+                        if (factory.terminals().list().size() == 0) {
+                            throw new InvalidUserDataException('No terminals found')
+                        } else {
+                            throw new InvalidUserDataException('No terminal with card found')
+                        }
+                    }
+                    CardTerminal terminal = terminalsWithCard.first()
+                    logger.info("Using terminal '${terminal.name}' to connect to fidesmo card")
+                    card = terminal.connect('*')
+                    card.ATR.bytes
+                }
+                public void close() {
+                    card.disconnect(false)
+                }
+                public byte[] transceive(byte[] command) {
+                    CardChannel cardChannel = card.basicChannel
+                    ResponseAPDU responseApdu = cardChannel.transmit(new CommandAPDU(command))
+                    responseApdu.bytes
+                }
+            },
+            new ClientCallback() {
+                void success() {
+                    latch.countDown()
+                }
+                void failure(String message) {
+                    throw new GradleException("Writing to fidesmo card failed with: '${message}'")
+                }
+            })
+
+        client.transceive()
+        if (! latch.await(cardTimeout, TimeUnit.SECONDS)) {
+            throw new GradleException('Time out while writing to fidesmo card')
+        }
+    }
+
     void apply(Project project) {
 
         if (!project.plugins.hasPlugin(JavacardPlugin)) {
             project.plugins.apply(JavacardPlugin)
         }
 
-        project.getExtensions().findByType(JavacardExtension).metaClass.withFidesmoPrefix = { suffix ->
-            String appId = getFidesmoAppId(project)
-            String appIdSegment = [ appId[0..1], appId[2..3], appId[4..5], appId[6..7] ].collect { nibble ->
-                "0x${nibble}" }.join(':')
-
-
-            if (suffix && suffix.length() > 0 ) {
-                "${FIDESMO_RID}:0x00:${appIdSegment}:${suffix}"
-            } else {
-                "${FIDESMO_RID}:0x00:${appIdSegment}"
-            }
+        def jcExtension = project.getExtensions().findByType(JavacardExtension)
+        jcExtension.metaClass.getFidesmoPrefix = {
+            String serviceProviderAidSuffix = getFidesmoAppId(project).padLeft(10, '0')
+            FIDESMO_RID + ':' + serviceProviderAidSuffix.collect{ it }.collate(2).collect{ "0x${it.join()}" }.join(':')
         }
 
-        project.getTasks().create("uploadExecutableLoadFile") {
-
+        project.tasks.create("uploadExecutableLoadFile") {
             group = 'publish'
             description = 'Uploads the java card applet to the fidesmo executable load file storage for later installation'
             dependsOn(project.convertJavacard)
 
             doLast {
+                def response = getFidesmoService(project).uploadExecutableLoadFile(
+                    new TypedFile('application/octet-stream', project.convertJavacard.getCapFile()))
+            }
+        }
 
-                def http = new HTTPBuilder('https://api.fidesmo.com')
+        project.tasks.create('deleteFromLocalCard') {
+            group = 'publish'
+            description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
 
-                http.request(POST, JSON) {
-                    uri.path = '/executableLoadFiles'
+            doLast {
+                def ccmDelete = new CcmDelete()
+                // TODO: should be inputs of the task
+                ccmDelete.application = jcExtension.cap.applets.first().aid.hexString
 
-                    headers.app_id = getFidesmoAppId(project)
-                    headers.app_key = getFidesmoAppKey(project)
+                def response = getFidesmoService(project).deleteExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmDelete)
+                executeOperation(response.operationId)
+            }
+        }
 
-                    requestContentType = BINARY
-                    body = project.convertJavacard.getCapFile().bytes
+        project.tasks.create('installToLocalCard') {
+            group = 'publish'
+            description = 'Installs the executable load file to fidesmo card via a locally attached card reader'
+            dependsOn(project.uploadExecutableLoadFile)
+            dependsOn(project.deleteFromLocalCard)
 
-                    response.success = { resp, json ->
-                        logger.info('Executable load file was uploaded succesfull and is available as' +
-                                    "aid: ${json.packageAid}")
-                    }
+            doLast {
+                def ccmInstall = new CcmInstall()
+                // TODO: should be inputs of the task
+                ccmInstall.executableLoadFile = jcExtension.cap.aid.hexString
+                ccmInstall.executableModule = jcExtension.cap.applets.first().aid.hexString
+                ccmInstall.application = jcExtension.cap.applets.first().aid.hexString
+                ccmInstall.parameters = ''
 
-                    response.failure = { resp ->
-                        logger.error('Executable load file could not be stored server responded' +
-                                     "'${resp.statusLine}' caused by '${resp.entity.content.text}'")
-                    }
-                }
+                def response = getFidesmoService(project).installExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmInstall)
+                executeOperation(response.operationId)
             }
         }
     }
