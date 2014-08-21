@@ -156,17 +156,10 @@ class FidesmoPlugin implements Plugin<Project> {
             project.plugins.apply(JavacardPlugin)
         }
 
-        project.getExtensions().findByType(JavacardExtension).metaClass.withFidesmoPrefix = { suffix ->
-            String appId = getFidesmoAppId(project)
-            String appIdSegment = [ appId[0..1], appId[2..3], appId[4..5], appId[6..7] ].collect { nibble ->
-                "0x${nibble}" }.join(':')
-
-
-            if (suffix && suffix.length() > 0 ) {
-                "${FIDESMO_RID}:0x00:${appIdSegment}:${suffix}"
-            } else {
-                "${FIDESMO_RID}:0x00:${appIdSegment}"
-            }
+        def jcExtension = project.getExtensions().findByType(JavacardExtension)
+        jcExtension.metaClass.getFidesmoPrefix = {
+            String serviceProviderAidSuffix = getFidesmoAppId(project).padLeft(10, '0')
+            FIDESMO_RID + ':' + serviceProviderAidSuffix.collect{ it }.collate(2).collect{ "0x${it.join()}" }.join(':')
         }
 
         project.tasks.create("uploadExecutableLoadFile") {
@@ -177,10 +170,6 @@ class FidesmoPlugin implements Plugin<Project> {
             doLast {
                 def response = getFidesmoService(project).uploadExecutableLoadFile(
                     new TypedFile('application/octet-stream', project.convertJavacard.getCapFile()))
-
-                // TODO: assert values
-                println(response.executableLoadFile)
-                println(response.executableModules)
             }
         }
 
@@ -189,9 +178,9 @@ class FidesmoPlugin implements Plugin<Project> {
             description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
 
             doLast {
-                // TODO: make configurable
                 def ccmDelete = new CcmDelete()
-                ccmDelete.application = 'a000000617009bc07ddb0101'
+                // TODO: should be inputs of the task
+                ccmDelete.application = jcExtension.cap.applets.first().aid.hexString
 
                 def response = getFidesmoService(project).deleteExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmDelete)
                 executeOperation(response.operationId)
@@ -205,11 +194,11 @@ class FidesmoPlugin implements Plugin<Project> {
             dependsOn(project.deleteFromLocalCard)
 
             doLast {
-                // TODO: make configurable
                 def ccmInstall = new CcmInstall()
-                ccmInstall.executableLoadFile = 'a000000617009bc07ddb01'
-                ccmInstall.executableModule = 'a000000617009bc07ddb0101'
-                ccmInstall.application = 'a000000617009bc07ddb0101'
+                // TODO: should be inputs of the task
+                ccmInstall.executableLoadFile = jcExtension.cap.aid.hexString
+                ccmInstall.executableModule = jcExtension.cap.applets.first().aid.hexString
+                ccmInstall.application = jcExtension.cap.applets.first().aid.hexString
                 ccmInstall.parameters = ''
 
                 def response = getFidesmoService(project).installExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmInstall)
