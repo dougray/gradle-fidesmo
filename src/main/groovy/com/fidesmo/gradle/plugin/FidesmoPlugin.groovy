@@ -113,7 +113,15 @@ class FidesmoPlugin implements Plugin<Project> {
                 Card card
                 public byte[] open() {
                     TerminalFactory factory = TerminalFactory.default
-                    CardTerminal terminal = factory.terminals().list(CardTerminals.State.CARD_PRESENT).first()
+                    List<CardTerminal> terminalsWithCard = factory.terminals().list(CardTerminals.State.CARD_PRESENT)
+                    if (terminalsWithCard.size() == 0) {
+                        if (factory.terminals().list().size() == 0) {
+                            throw new InvalidUserDataException('No terminals found')
+                        } else {
+                            throw new InvalidUserDataException('No terminal with card found')
+                        }
+                    }
+                    CardTerminal terminal = terminalsWithCard.first()
                     logger.info("Using terminal '${terminal.name}' to connect to fidesmo card")
                     card = terminal.connect('*')
                     card.ATR.bytes
