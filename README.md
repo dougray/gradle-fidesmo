@@ -1,6 +1,8 @@
 Fidesmo gradle plugin
 =====================
 
+[![Build Status](https://travis-ci.org/fidesmo/gradle-fidesmo.svg?branch=master)](https://travis-ci.org/fidesmo/gradle-fidesmo)
+
 A plugin for building java card applications suitable for usage on the [Fidesmo
 card](http://fidesmo.com/). The package also supports local testing in the
 [JCardSim](http://jcardsim.org/) simulator and installation to the Fidesmo card using a local card
