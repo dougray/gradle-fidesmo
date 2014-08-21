@@ -11,22 +11,16 @@ plugin](https://github.com/fidesmo/gradle-javacard).
 Features
 --------
 
- * compile/convert java package to executable load file (in *C*onverted *AP*plet format)
- * upload executable load file to the Fidesmo server [^connectionRequired]
- * install applet to Fidesmo card [^connectionRequired]
- * delete applet from Fidesmo card [^connectionRequired]
+ * compile/convert java package to executable load file (in **C** onverted **AP** plet format)
+ * upload executable load file to the Fidesmo server [^1]
+ * install applet to Fidesmo card [^1]
+ * delete applet from Fidesmo card [^1]
 
-[^connectionRequired]: These features interact with the fidesmo server, hence a working internet
-connection and a [fidesmo developer account](https://developer.fidesmo.com)(free of charge) is
-required.
+[^1]: These features interact with the fidesmo server, hence a working internet connection and a
+[fidesmo developer account](https://developer.fidesmo.com)(free of charge) is required.
 
 Usage
 -----
-
-In order to use this plugin you need to get into your local maven repository by executing:
-
-    git clone https://github.com/fidesmo/gradle-fidesmo.git
-    gradle install
 
 And include at least the following into the build.gradle of your project
 
@@ -34,11 +28,11 @@ And include at least the following into the build.gradle of your project
 
     buildscript {
         repositories {
-            mavenLocal()
+            maven { url 'http://releases.marmeladburk.fidesmo.com/' }
         }
 
         dependencies {
-            classpath  'com.fidesmo:gradle-plugin:0.1-SNAPSHOT'
+            classpath  'com.fidesmo:gradle-plugin:0.2.0'
         }
     }
 
