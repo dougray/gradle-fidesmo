@@ -57,12 +57,12 @@ portal](https://developer.fidesmo.com/).
 
 To build and upload your executable load file run:
 
-   ./gradlew uploadExecutableLoadFile
+    ./gradlew uploadExecutableLoadFile
 
 In order to (re)-install you application to a Fidesmo card using you card reader, run the following
 command:
 
-   ./gradlew installToLocalCard
+    ./gradlew installToLocalCard
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
