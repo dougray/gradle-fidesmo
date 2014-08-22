@@ -56,13 +56,18 @@ class FidesmoPlugin implements Plugin<Project> {
     // TODO: add as input property of card interaction tasks (an abstract class that needs to be created)
     def cardTimeout = 10
 
+    // TODO: replace with memonize
+    private Map<String, ?> consoleCache = [:]
     private String getPropertieOrRead(Project project, String key, String msg) {
         if (project.hasProperty(key)) {
             project.property(key)
         } else {
-            val value = System.console().readLine(msg)
-            project.properties[key] = value
-            return value
+            if (consoleCache[key]) {
+                consoleCache[key]
+            } else {
+                def value = System.console().readLine(msg)
+                consoleCache[key] = value
+            }
         }
     }
 
