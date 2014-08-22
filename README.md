@@ -34,7 +34,7 @@ And include at least the following into the build.gradle of your project
         }
 
         dependencies {
-            classpath  'com.fidesmo:gradle-plugin:0.2.0'
+            classpath  'com.fidesmo:gradle-fidesmo:0.1.0'
         }
     }
 
@@ -56,6 +56,10 @@ portal](https://developer.fidesmo.com/).
 
     echo 'fidesmoAppId: yourAppID' >> $HOME/.gradle/gradle.properties
     echo 'fidesmoAppKey: yourAppKey' >> $HOME/.gradle/gradle.properties
+
+In order to translate Java Classes to Java Card Applets you need to have the `Java card development
+kit`. Please follow the instructions for the [gradle-javacard
+plugin](https://github.com/fidesmo/gradle-javacard/tree/master#installing-the-java-card-development-kit).
 
 To build and upload your executable load file run:
 
