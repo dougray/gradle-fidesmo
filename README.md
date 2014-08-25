@@ -59,7 +59,10 @@ portal](https://developer.fidesmo.com/).
 
 In order to translate Java Classes to Java Card Applets you need to have the `Java card development
 kit`. Please follow the instructions for the [gradle-javacard
-plugin](https://github.com/fidesmo/gradle-javacard/tree/master#installing-the-java-card-development-kit).
+plugin](https://github.com/fidesmo/gradle-javacard/tree/master#installing-the-java-card-development-kit)
+and don't forget the `JC_PATH` environment variable to your shell.
+
+    export JC_PATH='../path/to/sdk/java_card_kit-2_2_2
 
 To build and upload your executable load file run:
 
