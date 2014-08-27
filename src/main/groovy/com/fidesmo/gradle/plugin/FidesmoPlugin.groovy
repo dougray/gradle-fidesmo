@@ -45,6 +45,8 @@ import com.fidesmo.gradle.plugin.models.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import jnasmartcardio.Smartcardio
+
 class FidesmoPlugin implements Plugin<Project> {
 
     Logger logger = LoggerFactory.getLogger(this.getClass())
@@ -117,7 +119,7 @@ class FidesmoPlugin implements Plugin<Project> {
             new AbstractTransceiver() {
                 Card card
                 public byte[] open() {
-                    TerminalFactory factory = TerminalFactory.default
+                    TerminalFactory factory = TerminalFactory.getInstance("PC/SC", null, new Smartcardio())
                     List<CardTerminal> terminalsWithCard = factory.terminals().list(CardTerminals.State.CARD_PRESENT)
                     if (terminalsWithCard.size() == 0) {
                         if (factory.terminals().list().size() == 0) {
