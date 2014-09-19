@@ -38,14 +38,10 @@ import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-import javax.smartcardio.*
-
 import com.fidesmo.gradle.plugin.models.*
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import jnasmartcardio.Smartcardio
 
 class FidesmoPlugin implements Plugin<Project> {
 
@@ -116,32 +112,7 @@ class FidesmoPlugin implements Plugin<Project> {
         def latch = new CountDownLatch(1)
         def client = Client.getInstance(
             operationId,
-            new AbstractTransceiver() {
-                Card card
-                public byte[] open() {
-                    TerminalFactory factory = TerminalFactory.getInstance("PC/SC", null, new Smartcardio())
-                    List<CardTerminal> terminalsWithCard = factory.terminals().list(CardTerminals.State.CARD_PRESENT)
-                    if (terminalsWithCard.size() == 0) {
-                        if (factory.terminals().list().size() == 0) {
-                            throw new InvalidUserDataException('No terminals found')
-                        } else {
-                            throw new InvalidUserDataException('No terminal with card found')
-                        }
-                    }
-                    CardTerminal terminal = terminalsWithCard.first()
-                    logger.info("Using terminal '${terminal.name}' to connect to fidesmo card")
-                    card = terminal.connect('*')
-                    card.ATR.bytes
-                }
-                public void close() {
-                    card.disconnect(false)
-                }
-                public byte[] transceive(byte[] command) {
-                    CardChannel cardChannel = card.basicChannel
-                    ResponseAPDU responseApdu = cardChannel.transmit(new CommandAPDU(command))
-                    responseApdu.bytes
-                }
-            },
+            new JnasmartcardioTransceiver(),
             new ClientCallback() {
                 void success() {
                     latch.countDown()
