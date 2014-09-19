@@ -38,6 +38,10 @@ And include at least the following into the build.gradle of your project
         }
     }
 
+    fidesmo {
+        appId = 'yourAppID'
+    }
+
     javacard {
         cap {
             aid = "${fidesmoPrefix}:0x01"
@@ -50,11 +54,10 @@ And include at least the following into the build.gradle of your project
         }
     }
 
-Before you can interact with the fidesmo servers, you need to add your appId and appKey to you
+Before you can interact with the fidesmo servers, you need to add your appKey to you
 gradle.properties. If you don't have created an application yet, you can do so on the [developer
 portal](https://developer.fidesmo.com/).
 
-    echo 'fidesmoAppId: yourAppID' >> $HOME/.gradle/gradle.properties
     echo 'fidesmoAppKey: yourAppKey' >> $HOME/.gradle/gradle.properties
 
 In order to translate Java Classes to Java Card Applets you need to have the `Java card development
