@@ -33,8 +33,8 @@ abstract class FidesmoBaseTask extends DefaultTask {
 
     protected static String getFidesmoAppId(project) {
         def extension = project.extensions.findByType(FidesmoExtension)
-        if (extension.appId) {
-            project.extensions.findByType(FidesmoExtension).appId
+        if (extension?.appId) {
+            extension.appId
         } else {
             getPropertieOrRead(project, FidesmoPlugin.FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
         }

@@ -20,4 +20,13 @@ package com.fidesmo.gradle.plugin
 class FidesmoExtension {
     static final String NAME = "fidesmo"
     String appId
+    Integer operationTimeout
+
+    Integer getOperationTimeout() {
+        if(operationTimeout) {
+            operationTimeout
+        } else {
+            30
+        }
+    }
 }
