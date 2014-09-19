@@ -95,9 +95,13 @@ class FidesmoPlugin implements Plugin<Project> {
                            new GradleException('An network related error occured while uploading the cap file', cause)
                        } else {
                            try {
-                               def errorMessage = cause.response.body.in().text
-                               new GradleException("The fidemo server aborted the operation with '${errorMessage}'", cause)
-                           } catch(any) {
+                               if (cause.response.status >= 500) {
+                                   def errorMessage = cause.response.body.in().text
+                                   new GradleException("The fidemo server aborted the operation with '${errorMessage}'", cause)
+                               } else {
+                                   cause
+                               }
+                           } catch (any) {
                                cause
                            }
                        }
@@ -108,7 +112,7 @@ class FidesmoPlugin implements Plugin<Project> {
         restAdapter.create(FidesmoService.class)
     }
 
-    def executeOperation(UUID operationId) {
+    def executeOperation(Project project, UUID operationId) {
         logger.info("Starting fidesmo sec-client to execute operation '${operationId}'")
         def latch = new CountDownLatch(1)
         def client = OperationClient.getInstance(
@@ -130,6 +134,26 @@ class FidesmoPlugin implements Plugin<Project> {
         if (! latch.await(cardTimeout, TimeUnit.SECONDS)) {
             throw new GradleException('Time out while writing to fidesmo card')
         }
+
+        int maxRetries = 9
+        logger.info("Fetching operation response from server")
+        for(int i = 0; i <= maxRetries; i ++) { // try ten times
+            try {
+                def response = getFidesmoService(project).getStatus(operationId)
+                if (response.statusCode != 200) {
+                    throw new GradleException("Operation ${operationId} failed with ${response.statusCode}")
+                }
+                return
+            } catch (RetrofitError retrofitError){
+                if (i == maxRetries || retrofitError?.response?.status != 404) {
+                    throw new Exception("Unable to determine out come of operation", retrofitError)
+                } else {
+                    sleep(100)
+                    logger.info("Failed to fetch operation result for ${operationId} retrying ${i+1}/${maxRetries}")
+                }
+            }
+        }
+
     }
 
     void apply(Project project) {
@@ -163,8 +187,8 @@ class FidesmoPlugin implements Plugin<Project> {
                 // TODO: should be inputs of the task
                 def ccmDelete = new CcmDelete(application: jcExtension.cap.applets.first().aid.hexString)
 
-                def response = getFidesmoService(project).deleteExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmDelete)
-                executeOperation(response.operationId)
+                def response = getFidesmoService(project).deleteExecutableLoadFile('https://api.fidesmo.com/status', ccmDelete)
+                executeOperation(project, response.operationId)
             }
         }
 
@@ -181,8 +205,8 @@ class FidesmoPlugin implements Plugin<Project> {
                                                 application: jcExtension.cap.applets.first().aid.hexString,
                                                 parameters: '')
 
-                def response = getFidesmoService(project).installExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmInstall)
-                executeOperation(response.operationId)
+                def response = getFidesmoService(project).installExecutableLoadFile('https://api.fidesmo.com/status', ccmInstall)
+                executeOperation(project, response.operationId)
             }
         }
     }
