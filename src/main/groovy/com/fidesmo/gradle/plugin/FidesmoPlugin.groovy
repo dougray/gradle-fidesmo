@@ -160,9 +160,8 @@ class FidesmoPlugin implements Plugin<Project> {
             description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
 
             doLast {
-                def ccmDelete = new CcmDelete()
                 // TODO: should be inputs of the task
-                ccmDelete.application = jcExtension.cap.applets.first().aid.hexString
+                def ccmDelete = new CcmDelete(application: jcExtension.cap.applets.first().aid.hexString)
 
                 def response = getFidesmoService(project).deleteExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmDelete)
                 executeOperation(response.operationId)
@@ -176,12 +175,11 @@ class FidesmoPlugin implements Plugin<Project> {
             dependsOn(project.deleteFromLocalCard)
 
             doLast {
-                def ccmInstall = new CcmInstall()
                 // TODO: should be inputs of the task
-                ccmInstall.executableLoadFile = jcExtension.cap.aid.hexString
-                ccmInstall.executableModule = jcExtension.cap.applets.first().aid.hexString
-                ccmInstall.application = jcExtension.cap.applets.first().aid.hexString
-                ccmInstall.parameters = ''
+                def ccmInstall = new CcmInstall(executableLoadFile: jcExtension.cap.aid.hexString,
+                                                executableModule: jcExtension.cap.applets.first().aid.hexString,
+                                                application: jcExtension.cap.applets.first().aid.hexString,
+                                                parameters: '')
 
                 def response = getFidesmoService(project).installExecutableLoadFile('http://fidesmo.com/dummyCallback', ccmInstall)
                 executeOperation(response.operationId)

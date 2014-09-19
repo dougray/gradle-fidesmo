@@ -17,10 +17,12 @@
 
 package com.fidesmo.gradle.plugin.models
 
+import groovy.transform.Immutable
+
+@Immutable
 public class CcmInstall {
     String executableLoadFile
     String executableModule
     String application
     String parameters
 }
-

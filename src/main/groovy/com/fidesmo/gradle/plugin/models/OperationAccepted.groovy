@@ -18,7 +18,9 @@
 package com.fidesmo.gradle.plugin.models
 
 import java.util.UUID
+import groovy.transform.Immutable
 
+@Immutable
 public class OperationAccepted {
     UUID operationId;
 }

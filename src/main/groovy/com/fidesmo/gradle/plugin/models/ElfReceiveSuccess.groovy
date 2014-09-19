@@ -17,6 +17,9 @@
 
 package com.fidesmo.gradle.plugin.models
 
+import groovy.transform.Immutable
+
+@Immutable
 public class ElfReceiveSuccess {
     String executableLoadFile
     List<String> executableModules
