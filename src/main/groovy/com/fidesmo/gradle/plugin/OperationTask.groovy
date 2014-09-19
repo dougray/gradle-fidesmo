@@ -33,8 +33,9 @@ import com.fidesmo.sec.client.ClientCallback
 
 class OperationTask extends FidesmoBaseTask {
 
-    // TODO: add as input property of card interaction tasks (an abstract class that needs to be created)
-    int cardTimeout = 10
+    int getOperationTimeout() {
+        def extension = project.extensions.findByType(FidesmoExtension).operationTimeout
+    }
 
     def executeOperation(UUID operationId) {
         logger.info("Starting fidesmo sec-client to execute operation '${operationId}'")
@@ -55,7 +56,7 @@ class OperationTask extends FidesmoBaseTask {
 
         client.transceive()
 
-        if (! latch.await(cardTimeout, TimeUnit.SECONDS)) {
+        if (! latch.await(operationTimeout, TimeUnit.SECONDS)) {
             throw new GradleException('Time out while writing to fidesmo card')
         }
 

@@ -44,14 +44,16 @@ class FidesmoPlugin implements Plugin<Project> {
 
     void apply(Project project) {
 
+        project.extensions.add(FidesmoExtension.NAME, FidesmoExtension)
+
         if (!project.plugins.hasPlugin(JavacardPlugin)) {
             project.plugins.apply(JavacardPlugin)
         }
 
         def jcExtension = project.extensions.findByType(JavacardExtension)
         jcExtension.metaClass.getFidesmoPrefix = {
-            String fidesmoAppId = FidesmoBaseTask.getPropertieOrRead(project, FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
-            String serviceProviderAidSuffix = fidesmoAppId.padLeft(10, '0')
+            //String fidesmoAppId = FidesmoBaseTask.getPropertieOrRead(project, FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
+            String serviceProviderAidSuffix = FidesmoBaseTask.getFidesmoAppId(project).padLeft(10, '0')
             FIDESMO_RID + ':' + serviceProviderAidSuffix.collect{ it }.collate(2).collect{ "0x${it.join()}" }.join(':')
         }
 

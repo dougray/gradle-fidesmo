@@ -23,7 +23,7 @@ import groovy.transform.Memoized
 abstract class FidesmoBaseTask extends DefaultTask {
 
     @Memoized
-    protected static String getPropertieOrRead(Project project, String key, String msg) {
+    private static String getPropertieOrRead(Project project, String key, String msg) {
         if (project.hasProperty(key)) {
             project.property(key)
         } else {
@@ -31,8 +31,17 @@ abstract class FidesmoBaseTask extends DefaultTask {
         }
     }
 
+    protected static String getFidesmoAppId(project) {
+        def extension = project.extensions.findByType(FidesmoExtension)
+        if (extension?.appId) {
+            extension.appId
+        } else {
+            getPropertieOrRead(project, FidesmoPlugin.FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
+        }
+    }
+
     String getFidesmoAppId() {
-        getPropertieOrRead(project, FidesmoPlugin.FIDESMO_APP_ID, "\nPlease specify fidesmo app id: ")
+        getFidesmoAppId(project)
     }
 
     String getFidesmoAppKey() {
