@@ -25,7 +25,8 @@ import org.gradle.api.GradleException
 import com.fidesmo.gradle.javacard.JavacardPlugin
 import com.fidesmo.gradle.javacard.JavacardExtension
 
-import com.fidesmo.sec.client.Client
+import com.fidesmo.sec.client.RetrofitSecClient
+import com.fidesmo.sec.client.OperationClient
 import com.fidesmo.sec.client.ClientCallback
 import com.fidesmo.sec.transceivers.AbstractTransceiver
 
@@ -110,7 +111,7 @@ class FidesmoPlugin implements Plugin<Project> {
     def executeOperation(UUID operationId) {
         logger.info("Starting fidesmo sec-client to execute operation '${operationId}'")
         def latch = new CountDownLatch(1)
-        def client = Client.getInstance(
+        def client = OperationClient.getInstance(
             operationId,
             new JnasmartcardioTransceiver(),
             new ClientCallback() {
@@ -120,9 +121,12 @@ class FidesmoPlugin implements Plugin<Project> {
                 void failure(String message) {
                     throw new GradleException("Writing to fidesmo card failed with: '${message}'")
                 }
-            })
+            },
+            RetrofitSecClient.getClient()
+        )
 
         client.transceive()
+
         if (! latch.await(cardTimeout, TimeUnit.SECONDS)) {
             throw new GradleException('Time out while writing to fidesmo card')
         }
