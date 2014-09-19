@@ -32,4 +32,7 @@ public interface FidesmoService {
 
     @PUT('/ccm/delete')
     OperationAccepted deleteExecutableLoadFile(@Header('callbackUrl') String callbackUrl, @Body CcmDelete delete)
+
+    @GET('/status/{operationId}')
+    OperationResponse getStatus(@Path("operationId") UUID operationId)
 }

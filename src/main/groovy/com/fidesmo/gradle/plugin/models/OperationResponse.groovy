@@ -17,12 +17,11 @@
 
 package com.fidesmo.gradle.plugin.models
 
+import java.util.UUID
 import groovy.transform.Immutable
 
 @Immutable
-public class CcmInstall {
-    String executableLoadFile
-    String executableModule
-    String application
-    String parameters
+class OperationResponse {
+    UUID operationId
+    int statusCode
 }

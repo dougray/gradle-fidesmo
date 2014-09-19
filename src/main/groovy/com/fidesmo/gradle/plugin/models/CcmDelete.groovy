@@ -17,7 +17,9 @@
 
 package com.fidesmo.gradle.plugin.models
 
+import groovy.transform.Immutable
+
+@Immutable
 public class CcmDelete {
     String application
 }
-
