@@ -63,9 +63,9 @@ portal](https://developer.fidesmo.com/).
 In order to translate Java Classes to Java Card Applets you need to have the `Java card development
 kit`. Please follow the instructions for the [gradle-javacard
 plugin](https://github.com/fidesmo/gradle-javacard/tree/master#installing-the-java-card-development-kit)
-and don't forget the `JC_PATH` environment variable to your shell.
+and don't forget the `JC_HOME` environment variable to your shell.
 
-    export JC_PATH='../path/to/sdk/java_card_kit-2_2_2
+    export JC_HOME='../path/to/sdk/java_card_kit-2_2_2/java_card_kit-2_2_2'
 
 To build and upload your executable load file run:
 
@@ -78,3 +78,14 @@ command:
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
+
+Additional features
+-------------------
+
+Since the fidesmo plugin is based on the javacard plugin, all its features can be used as well. Here is a short non-complete list:
+
+* Adding additional exp files
+* Support testing with JCardsim
+* Building without Javacard SDK
+
+To use those features please refer to the [documentation](https://github.com/fidesmo/gradle-javacard/blob/master/Readme.md) of the javacard plugin.
