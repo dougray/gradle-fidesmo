@@ -22,4 +22,5 @@ import groovy.transform.Immutable
 @Immutable
 public class CcmDelete {
     String application
+    Boolean withRelated
 }
