@@ -74,7 +74,7 @@ class FidesmoPlugin implements Plugin<Project> {
 
             doLast {
                 // TODO: should be inputs of the task
-                def ccmDelete = new CcmDelete(application: jcExtension.cap.applets.first().aid.hexString)
+                def ccmDelete = new CcmDelete(application: jcExtension.cap.aid.hexString, withRelated: true)
 
                 def response = fidesmoService.deleteExecutableLoadFile('https://api.fidesmo.com/status', ccmDelete)
                 executeOperation(response.operationId)
