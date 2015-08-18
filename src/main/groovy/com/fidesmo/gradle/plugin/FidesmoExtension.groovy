@@ -21,6 +21,7 @@ class FidesmoExtension {
     static final String NAME = "fidesmo"
     String appId
     Integer operationTimeout
+    String instanceAid
 
     Integer getOperationTimeout() {
         if(operationTimeout) {
@@ -29,4 +30,5 @@ class FidesmoExtension {
             30
         }
     }
+
 }
