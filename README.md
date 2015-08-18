@@ -24,7 +24,7 @@ Features
 Usage
 -----
 
-And include at least the following into the build.gradle of your project
+Include at least the following into the build.gradle of your project
 
     apply plugin: 'fidesmo'
 
@@ -36,10 +36,6 @@ And include at least the following into the build.gradle of your project
         dependencies {
             classpath  'com.fidesmo:gradle-fidesmo:0.1.6'
         }
-    }
-
-    fidesmo {
-        appId = 'yourAppID'
     }
 
     javacard {
@@ -54,10 +50,11 @@ And include at least the following into the build.gradle of your project
         }
     }
 
-Before you can interact with the fidesmo servers, you need to add your appKey to you
+Before you can interact with the fidesmo servers, you need to add your appId and appKey to you
 gradle.properties. If you don't have created an application yet, you can do so on the [developer
 portal](https://developer.fidesmo.com/).
 
+    echo 'fidesmoAppId: yourAppID' >> $HOME/.gradle/gradle.properties
     echo 'fidesmoAppKey: yourAppKey' >> $HOME/.gradle/gradle.properties
 
 In order to translate Java Classes to Java Card Applets you need to have the `Java card development
@@ -78,6 +75,15 @@ command:
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
+
+Assign a specific AID to the applet instance
+--------------------------------------------
+
+When installing an applet to a Fidesmo card, the default behavior of the plugin is to assign an instance AID derived from the applet AID specified as above. If by any reason you want to assign a different AID (for example, because [you want to use your own RID](https://developer.fidesmo.com/javacard)), add the following lines to build.gradle:
+
+    fidesmo {
+        instanceAid = 'yourInstanceAid'
+    }
 
 Additional features
 -------------------

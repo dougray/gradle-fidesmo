@@ -24,6 +24,7 @@ import org.gradle.api.GradleException
 
 import com.fidesmo.gradle.javacard.JavacardPlugin
 import com.fidesmo.gradle.javacard.JavacardExtension
+import com.fidesmo.gradle.javacard.JavacardExtension.Aid
 
 import retrofit.mime.TypedFile
 
@@ -44,7 +45,7 @@ class FidesmoPlugin implements Plugin<Project> {
 
     void apply(Project project) {
 
-        project.extensions.add(FidesmoExtension.NAME, FidesmoExtension)
+        def fidesmoExtension = project.extensions.create(FidesmoExtension.NAME, FidesmoExtension)
 
         if (!project.plugins.hasPlugin(JavacardPlugin)) {
             project.plugins.apply(JavacardPlugin)
@@ -88,10 +89,17 @@ class FidesmoPlugin implements Plugin<Project> {
             dependsOn(project.deleteFromLocalCard)
 
             doLast {
+                def applicationAid
+                if(fidesmoExtension?.instanceAid) {
+                    applicationAid = new Aid(fidesmoExtension.instanceAid).hexString
+                } else {
+                    applicationAid = jcExtension.cap.applets.first().aid.hexString
+                }
+
                 // TODO: should be inputs of the task
                 def ccmInstall = new CcmInstall(executableLoadFile: jcExtension.cap.aid.hexString,
                                                 executableModule: jcExtension.cap.applets.first().aid.hexString,
-                                                application: jcExtension.cap.applets.first().aid.hexString,
+                                                application: applicationAid,
                                                 parameters: '')
 
                 def response = fidesmoService.installExecutableLoadFile('https://api.fidesmo.com/status', ccmInstall)
