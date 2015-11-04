@@ -21,15 +21,13 @@ import org.gradle.api.Project
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-
 import retrofit.*
 import retrofit.RequestInterceptor.RequestFacade
 
 import com.fidesmo.sec.client.RetrofitSecClient
-import com.fidesmo.sec.client.OperationClient
+import com.fidesmo.sec.client.OperationClientImpl
 import com.fidesmo.sec.client.ClientCallback
+import com.fidesmo.sec.transceivers.Transceiver
 
 class OperationTask extends FidesmoBaseTask {
 
@@ -38,28 +36,16 @@ class OperationTask extends FidesmoBaseTask {
     }
 
     def executeOperation(UUID operationId) {
-        logger.info("Starting fidesmo sec-client to execute operation '${operationId}'")
-        def latch = new CountDownLatch(1)
-        def client = OperationClient.getInstance(
+
+        // execute operation by implementing sec-client flow
+        def client = (new OperationClientImpl()).get(
             operationId,
-            new JnasmartcardioTransceiver(),
-            new ClientCallback() {
-                void success() {
-                    latch.countDown()
-                }
-                void failure(String message) {
-                    throw new GradleException("Writing to fidesmo card failed with: '${message}'")
-                }
-            },
-            RetrofitSecClient.getClient()
+            (Transceiver) new SmartcardioTransceiver(),
+            RetrofitSecClient.client
         )
+        client.transceive().toBlocking().last()
 
-        client.transceive()
-
-        if (! latch.await(operationTimeout, TimeUnit.SECONDS)) {
-            throw new GradleException('Time out while writing to fidesmo card')
-        }
-
+        // check operation result by querying the status service
         int maxRetries = 9
         for(int i = 0; i <= maxRetries; i ++) { // try ten times
             try {
