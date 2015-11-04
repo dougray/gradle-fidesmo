@@ -25,4 +25,5 @@ public class CcmInstall {
     String executableModule
     String application
     String parameters
+    Boolean encryptLoad
 }
