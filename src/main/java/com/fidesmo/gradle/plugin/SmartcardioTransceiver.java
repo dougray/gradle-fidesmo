@@ -55,9 +55,9 @@ public class SmartcardioTransceiver implements Transceiver {
             }
 
             return Observable
-                .just((IsoCard)new SmartcardioCard(terminalsWithCard
-                                                   .get(0)
-                                                   .connect("*")));
+                .just((IsoCard) new LoggingCard(new SmartcardioCard(terminalsWithCard
+                                                                    .get(0)
+                                                                    .connect("*"))));
         } catch (NoSuchAlgorithmException e) {
             return Observable.error(new IOException("Error with jnassmartcardio", e));
         } catch (CardException e) {
