@@ -25,14 +25,19 @@ import com.fidesmo.sec.utils.Hex;
 import nordpol.IsoCard;
 import nordpol.OnCardErrorListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** Wrap an IsoCard so that all transmitted APDUs are logged */
 
 public class LoggingCard implements IsoCard {
 
     IsoCard underlying;
+    Logger logger;
 
     public LoggingCard(IsoCard underlying) {
         this.underlying = underlying;
+        this.logger = LoggerFactory.getLogger("transaction-trace");
     }
 
     public void addOnCardErrorListener(OnCardErrorListener listener) {
@@ -68,9 +73,9 @@ public class LoggingCard implements IsoCard {
     }
 
     public byte[] transceive(byte[] command) throws IOException {
-        System.out.println("Send to card: " + Hex.encodeHex(command));
+        logger.info("Send to card: " + Hex.encodeHex(command));
         byte[] response = underlying.transceive(command);
-        System.out.println("Received from card: " + Hex.encodeHex(response));
+        logger.info("Received from card: " + Hex.encodeHex(response));
         return response;
     }
 
