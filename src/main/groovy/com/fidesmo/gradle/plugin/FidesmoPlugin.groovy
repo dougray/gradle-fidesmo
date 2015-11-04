@@ -112,5 +112,9 @@ class FidesmoPlugin implements Plugin<Project> {
 
         project.tasks.create('installToLocalCard', OperationTask, installToLocalCard(true))
         project.tasks.create('installToLocalCardUnencrypted', OperationTask, installToLocalCard(false))
+
+        project.tasks.create('console') << {
+            (new Console()).run()
+        }
     }
 }
