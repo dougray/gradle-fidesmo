@@ -37,7 +37,7 @@ public class LoggingCard implements IsoCard {
 
     public LoggingCard(IsoCard underlying) {
         this.underlying = underlying;
-        this.logger = LoggerFactory.getLogger("transaction-trace");
+        this.logger = LoggerFactory.getLogger(LoggingCard.class);
     }
 
     public void addOnCardErrorListener(OnCardErrorListener listener) {
@@ -73,9 +73,9 @@ public class LoggingCard implements IsoCard {
     }
 
     public byte[] transceive(byte[] command) throws IOException {
-        logger.info("Send to card: " + Hex.encodeHex(command));
+        logger.info("==> ApduCommand(" + Hex.encodeHex(command) + ")");
         byte[] response = underlying.transceive(command);
-        logger.info("Received from card: " + Hex.encodeHex(response));
+        logger.info("<== ApduResponse(" + Hex.encodeHex(response) + ")");
         return response;
     }
 
