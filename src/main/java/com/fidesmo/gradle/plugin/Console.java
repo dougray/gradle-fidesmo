@@ -16,6 +16,15 @@ import nordpol.IsoCard;
  */
 public class Console {
 
+    public static void main(String args[]) {
+        try {
+            (new Console()).run();
+        } catch (IOException e) {
+            System.err.println(e);
+            System.exit(1);
+        }
+    }
+
     public void run() throws IOException {
         Terminal terminal = TerminalFactory.create();
         terminal.setEchoEnabled(true);
@@ -40,7 +49,7 @@ public class Console {
                 }
 
                 byte[] apdu = Hex.decodeHex(tokens[1].toUpperCase());
-                out.println(Hex.encodeHex(card.transceive(apdu)));
+                card.transceive(apdu); // output displayed through log
             } else if (line.equals("exit")) {
                 break;
             } else if (line.equals("help")) {

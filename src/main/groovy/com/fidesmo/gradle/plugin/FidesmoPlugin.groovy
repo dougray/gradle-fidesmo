@@ -21,6 +21,7 @@ import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.JavaExec
 
 import com.fidesmo.gradle.javacard.JavacardPlugin
 import com.fidesmo.gradle.javacard.JavacardExtension
@@ -113,8 +114,10 @@ class FidesmoPlugin implements Plugin<Project> {
         project.tasks.create('installToLocalCard', OperationTask, installToLocalCard(true))
         project.tasks.create('installToLocalCardUnencrypted', OperationTask, installToLocalCard(false))
 
-        project.tasks.create('console') << {
-            (new Console()).run()
+        project.tasks.create('console', JavaExec) {
+            classpath project.buildscript.configurations.classpath
+            main = 'com.fidesmo.gradle.plugin.Console'
+            standardInput = System.in
         }
     }
 }
