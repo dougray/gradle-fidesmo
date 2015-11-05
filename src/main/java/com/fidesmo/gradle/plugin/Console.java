@@ -51,6 +51,7 @@ public class Console {
                     byte[] apdu = Hex.decodeHex(tokens[1].toUpperCase());
                     card.transceive(apdu); // output displayed through log
                 } else if (line.equals("exit")) {
+                    card.close();
                     break;
                 } else if (line.equals("help")) {
                     out.println("send <hex string>  -- send apdu to card");
