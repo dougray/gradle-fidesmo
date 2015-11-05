@@ -18,6 +18,7 @@
 package com.fidesmo.gradle.plugin;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.security.NoSuchAlgorithmException;
 import javax.smartcardio.TerminalFactory;
@@ -38,6 +39,15 @@ import nordpol.IsoCard;
  * default implementation.
  */
 public class SmartcardioTransceiver implements Transceiver {
+    private PrintWriter writer;
+
+    public SmartcardioTransceiver() {
+        this.writer = null;
+    }
+
+    public SmartcardioTransceiver(PrintWriter writer) {
+        this.writer = writer;
+    }
 
     public Observable<IsoCard> getCard() {
         try {
@@ -57,7 +67,7 @@ public class SmartcardioTransceiver implements Transceiver {
             return Observable
                 .just((IsoCard) new LoggingCard(new SmartcardioCard(terminalsWithCard
                                                                     .get(0)
-                                                                    .connect("*"))));
+                                                                    .connect("*")), writer));
         } catch (NoSuchAlgorithmException e) {
             return Observable.error(new IOException("Error with jnassmartcardio", e));
         } catch (CardException e) {

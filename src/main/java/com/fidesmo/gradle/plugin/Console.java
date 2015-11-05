@@ -16,16 +16,7 @@ import nordpol.IsoCard;
  */
 public class Console {
 
-    public static void main(String args[]) {
-        try {
-            (new Console()).run();
-        } catch (IOException e) {
-            System.err.println(e);
-            System.exit(1);
-        }
-    }
-
-    public void run() throws IOException {
+    public static void run() throws IOException {
         Terminal terminal = TerminalFactory.create();
         terminal.setEchoEnabled(true);
         ConsoleReader reader = new ConsoleReader("Fidesmo console",
@@ -33,13 +24,13 @@ public class Console {
                                                  System.out,
                                                  terminal);
         reader.setHandleUserInterrupt(true);
-        IsoCard card = (new SmartcardioTransceiver())
+        PrintWriter out = new PrintWriter(reader.getOutput());
+        IsoCard card = (new SmartcardioTransceiver(out))
             .getCard()
             .toBlocking()
             .first();
 
         String line;
-        PrintWriter out = new PrintWriter(reader.getOutput());
         try {
             while((line = reader.readLine("> ")) != null) {
                 String[] tokens = line.split(" ");

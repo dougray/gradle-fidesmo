@@ -114,11 +114,8 @@ class FidesmoPlugin implements Plugin<Project> {
         project.tasks.create('installToLocalCard', OperationTask, installToLocalCard(true))
         project.tasks.create('installToLocalCardUnencrypted', OperationTask, installToLocalCard(false))
 
-        project.tasks.create('console', JavaExec) {
-            classpath project.buildscript.configurations.classpath
-            jvmArgs = ['-Djna.nosys=true']
-            main = 'com.fidesmo.gradle.plugin.Console'
-            standardInput = System.in
+        project.tasks.create('console') << {
+            Console.run();
         }
     }
 }
