@@ -17,6 +17,7 @@ Features
  * upload executable load file to the Fidesmo server [^1]
  * install applet to Fidesmo card [^1]
  * delete applet from Fidesmo card [^1]
+ * send and receives APDUs
 
 [^1]: These features interact with the fidesmo server, hence a working internet connection and a
 [fidesmo developer account](https://developer.fidesmo.com)(free of charge) is required.
@@ -75,6 +76,22 @@ command:
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
+
+Console
+-------
+
+To start up the APDU console one must make sure to disabled the gradle
+daemon and silence all other output from gradle. This can be done
+using:
+
+    ./gradlew --no-daemon -q console
+
+Commands are sent using the send command, e.g.
+
+    send 00A404000BA00000061702000200000100
+
+To show the a list of all commands use the `help` command. To exit the
+console use the `exit` command
 
 Assign a specific AID to the applet instance
 --------------------------------------------

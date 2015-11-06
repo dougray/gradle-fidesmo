@@ -18,6 +18,7 @@
 package com.fidesmo.gradle.plugin;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -33,11 +34,27 @@ import org.slf4j.LoggerFactory;
 public class LoggingCard implements IsoCard {
 
     IsoCard underlying;
+    PrintWriter writer;
     Logger logger;
 
     public LoggingCard(IsoCard underlying) {
         this.underlying = underlying;
-        this.logger = LoggerFactory.getLogger("transaction-trace");
+        this.logger = LoggerFactory.getLogger(LoggingCard.class);
+        this.writer = null;
+    }
+
+    public LoggingCard(IsoCard underlying, PrintWriter writer) {
+        this.underlying = underlying;
+        this.logger = LoggerFactory.getLogger(LoggingCard.class);
+        this.writer = writer;
+    }
+
+    private void log(String msg) {
+        if(writer != null) {
+            writer.println(msg);
+        } else {
+            logger.info(msg);
+        }
     }
 
     public void addOnCardErrorListener(OnCardErrorListener listener) {
@@ -73,9 +90,9 @@ public class LoggingCard implements IsoCard {
     }
 
     public byte[] transceive(byte[] command) throws IOException {
-        logger.info("Send to card: " + Hex.encodeHex(command));
+        log("==> ApduCommand(" + Hex.encodeHex(command) + ")");
         byte[] response = underlying.transceive(command);
-        logger.info("Received from card: " + Hex.encodeHex(response));
+        log("<== ApduResponse(" + Hex.encodeHex(response) + ")");
         return response;
     }
 
