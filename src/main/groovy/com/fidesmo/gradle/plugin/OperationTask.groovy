@@ -37,16 +37,31 @@ class OperationTask extends FidesmoBaseTask {
 
     def executeOperation(UUID operationId) {
 
-        // execute operation by implementing sec-client flow
-        def client = (new OperationClientImpl()).get(
-            operationId,
-            (Transceiver) new SmartcardioTransceiver(),
-            RetrofitSecClient.client
-        )
-        client.transceive().toBlocking().last()
+        /* semantically both options differ. On android after return
+         * the operation has been started, locally the last apdu was
+         * already send.
+         */
+        if (project.hasProperty('fidesmo.adb_reader')) {
+            // call activity (and therefore sec-client) on android phone
+            def android_home = System.env.ANDROID_HOME
+            def cmd = "${android_home}/platform-tools/adb shell " +
+                "am start -W " +
+                "--es descriptionExtra '${description}' " +
+                "--es operationIdExtra '${operationId}' " +
+                "com.fidesmo.sec.android/.ui.OperationActivity_"
+            def proc = cmd.execute()
+            proc.waitFor()
+        } else {
+            // execute operation by implementing sec-client flow
+            def client = (new OperationClientImpl()).get(
+                operationId,
+                (Transceiver) new SmartcardioTransceiver(),
+                RetrofitSecClient.client)
+            client.transceive().toBlocking().last()
+        }
 
         // check operation result by querying the status service
-        int maxRetries = 9
+        int maxRetries = 30
         for(int i = 0; i <= maxRetries; i ++) { // try ten times
             try {
                 def response = fidesmoService.getStatus(operationId)
@@ -58,12 +73,11 @@ class OperationTask extends FidesmoBaseTask {
                 if (i == maxRetries || retrofitError?.response?.status != 404) {
                     throw new Exception("Unable to determine out come of operation", retrofitError)
                 } else {
-                    sleep(100)
+                    sleep(1000)
                     logger.info("Failed to fetch operation result for ${operationId} retrying ${i+1}/${maxRetries}")
                 }
             }
-        }
-
+            }
     }
 
 
@@ -100,6 +114,4 @@ class OperationTask extends FidesmoBaseTask {
 
         restAdapter.create(FidesmoService.class)
     }
-
-
 }
