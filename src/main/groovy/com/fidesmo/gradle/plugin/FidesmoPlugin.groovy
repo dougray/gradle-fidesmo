@@ -72,7 +72,7 @@ class FidesmoPlugin implements Plugin<Project> {
 
         project.tasks.create('deleteFromLocalCard', OperationTask) {
             group = 'publish'
-            description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
+            description = 'Deletes the executable load file from the fidesm card via a locally attached card reader or android phone'
 
             doLast {
                 // TODO: should be inputs of the task
@@ -86,7 +86,7 @@ class FidesmoPlugin implements Plugin<Project> {
         def installToLocalCard = { encryptLoad ->
             { task ->
                 task.group = 'publish'
-                task.description = 'Installs the executable load file to fidesmo card via a locally attached card reader'
+                task.description = 'Installs the executable load file to fidesmo card via a locally attached card reader or android phone'
                 task.dependsOn(project.uploadExecutableLoadFile)
                 task.dependsOn(project.deleteFromLocalCard)
 
