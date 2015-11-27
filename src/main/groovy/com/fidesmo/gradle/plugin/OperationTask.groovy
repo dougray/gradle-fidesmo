@@ -46,7 +46,7 @@ class OperationTask extends FidesmoBaseTask {
             def android_home = System.env.ANDROID_HOME
             def cmd = "${android_home}/platform-tools/adb shell " +
                 "am start -W " +
-                "--es descriptionExtra '${description}' " +
+                "--es descriptionExtra 'Run `${name}` task' " +
                 "--es operationIdExtra '${operationId}' " +
                 "com.fidesmo.sec.android/.ui.OperationActivity_"
             def proc = cmd.execute()
@@ -77,7 +77,7 @@ class OperationTask extends FidesmoBaseTask {
                     logger.info("Failed to fetch operation result for ${operationId} retrying ${i+1}/${maxRetries}")
                 }
             }
-            }
+        }
     }
 
 
