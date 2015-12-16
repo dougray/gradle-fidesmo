@@ -36,7 +36,7 @@ Include at least the following into the build.gradle of your project
         }
 
         dependencies {
-            classpath  'com.fidesmo:gradle-fidesmo:0.1.8'
+            classpath  'com.fidesmo:gradle-fidesmo:0.1.10'
         }
     }
 
