@@ -6,8 +6,8 @@ notifications:
   email: false
 env:
   global:
-  - secure: "Te7/gV9ApAi9Amo9THskyF3R+zIcMUgTI9kr2xRxNM0l3tN9N1sCv7CvxoabzHniSofKUOlI7Lhq/0gDIaWXYvNow73QhUkf0Oz5npFRITm3BdpVZxu/ZIQ4OR0edLRgmnRoRKqnfWWLEivu7YNOn9jkAQ7D/uBifsIrWWdX8uI="
-  - secure: "pzsIaEvi1N3BiWOQMNCwcu7t5YLNLB13DfewRJUvXdbhpwWw3GAeVBBxQELXYyoxWBQn2TFCm6Qva2lmXZx+H+BwpBAqM9Txv4jaCKEMxVDjpRU2HIzoWfJ5lEKO7FgonMOs5VqMv5Ig3Ub0m+sX7LS92nRPBkHhYllG0VvmfR0="
+  - secure: "AF4t+lJ3ScRo7LDllD6VabOeUHWR2vKPoSthK3l1jwzNNG/J/KB+42yfGlULPnpiju8i9DJKLYENJeeP9VOz4mhANvPpw5ug3EtOerfw/qnR9CDRZOTQjccaUoVBJ6m4aljBnsGKAp9SZyMtMu3XIZU1yBVEOy8beZhCL0PxQrM="
+  - secure: "FyJjSMVyOCYACSzPDvqdLKZyQOnZkRAQ4gFAX/EgTkXkzV3Gry3RtfT+gfgU9QWqNysj8KDfLdrE8QRfUzsdpjlx3zgTuWGMybPX1eW09cT+0KGLh50AooEGsxBJ4eiI+tBX16aU4yX94tcGrSUoDZ0rHu8rAC9DPzHb40Q7he8="
 after_success:
   - ! '[[ $TRAVIS_BRANCH =~ ^(v[0-9]+\.[0-9]+\.[0-9]+|master)$ && $TRAVIS_PULL_REQUEST
     = false ]] && ./gradlew install uploadArchives'
