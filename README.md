@@ -83,7 +83,10 @@ Android phone as card reader
 
 The app can also use an usb attached android phone instead of a card
 reader. It requires the android platform tools (adb) on the computer
-and the Fidesmo Android App on the phone.
+and the Fidesmo Android App on the phone. It also requires you to
+enable USB debugging for your device, please see the
+[Android documentation for devices](http://developer.android.com/tools/device.html#setting-up).
+Bullet 2 in the list is what you need to do.
 
 In order to install your cardlet via the phone:
 
