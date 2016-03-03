@@ -17,8 +17,7 @@ Features
  * upload executable load file to the Fidesmo server [^1]
  * install applet to Fidesmo card [^1]
  * delete applet from Fidesmo card [^1]
- * send and receives APDUs with CLI
- * **experimental**: use phone as card reader
+ * send and receives APDUs
 
 [^1]: These features interact with the fidesmo server, hence a working internet connection and a
 [fidesmo developer account](https://developer.fidesmo.com)(free of charge) is required.
@@ -77,31 +76,6 @@ command:
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
-
-Android phone as card reader
-----------------------------
-
-The app can also use an usb attached android phone instead of a card
-reader. It requires the android platform tools (adb) on the computer
-and the Fidesmo Android App on the phone. It also requires you to
-enable USB debugging for your device, please see the
-[Android documentation for devices](http://developer.android.com/tools/device.html#setting-up).
-Bullet 2 in the list is what you need to do.
-
-In order to install your cardlet via the phone:
-
-    1. Enable developer mode of Fidesmo Android App
-    2. Start *Card reader mode* from main menu
-    3. Place card on the back of the phone
-    4. Run the following commands
-
-        export ANDROID_HOME=/.../path/to/android/tools
-        ./gradlew installToLocalCard -P fidesmo.adb_reader
-
-
-    5. Run more operations commands
-
-        ./gradlew deleteFromLocalCard -P fidesmo.adb_reader
 
 Console
 -------
