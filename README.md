@@ -17,7 +17,8 @@ Features
  * upload executable load file to the Fidesmo server [^1]
  * install applet to Fidesmo card [^1]
  * delete applet from Fidesmo card [^1]
- * send and receives APDUs
+ * send and receives APDUs with CLI
+ * ~~**experimental**: use phone as card reader~~ **Discontinued**
 
 [^1]: These features interact with the fidesmo server, hence a working internet connection and a
 [fidesmo developer account](https://developer.fidesmo.com)(free of charge) is required.
@@ -76,6 +77,12 @@ command:
 
 This will take the first defined applet and create an instance of on the card with the same aid as
 the applet.
+
+Android phone as card reader
+----------------------------
+
+This has been discontinued due to reliability issues.
+
 
 Console
 -------
