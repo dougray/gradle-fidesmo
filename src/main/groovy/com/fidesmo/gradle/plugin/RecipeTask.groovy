@@ -61,7 +61,7 @@ class RecipeTask extends FidesmoBaseTask {
 
             fidesmoService.uploadDeleteRecipe(getFidesmoAppId(), serviceId, recipe)
 
-            ServiceDeliveryClient client = new ServiceDeliveryClient(RetrofitDeliverySecClient.getClient(), SmartcardioCard.getCard(), clientFactory, 5)
+            ServiceDeliveryClient client = new ServiceDeliveryClient(RetrofitDeliverySecClient.getClient(), SmartCardIoCard.getCard(), clientFactory, 5)
 
             ServiceDeliveryResponse response = client.deliver(getServiceDeliveryRequired(description, serviceId)).toBlocking().last()
 
@@ -84,7 +84,7 @@ class RecipeTask extends FidesmoBaseTask {
 
             fidesmoService.uploadInstallRecipe(getFidesmoAppId(), serviceId, recipe)
 
-            ServiceDeliveryClient client = new ServiceDeliveryClient(RetrofitDeliverySecClient.getClient(), SmartcardioCard.getCard(), clientFactory, 5)
+            ServiceDeliveryClient client = new ServiceDeliveryClient(RetrofitDeliverySecClient.getClient(), SmartCardIoCard.getCard(), clientFactory, 5)
 
             ServiceDeliveryResponse response = client.deliver(getServiceDeliveryRequired(description, serviceId)).toBlocking().last()
 
@@ -109,7 +109,7 @@ class RecipeTask extends FidesmoBaseTask {
     }
 
     def getServiceDeliveryRequired(ServiceDescription description, String serviceId) {
-        CardInfoClient cardClient = new CardInfoClient(SmartcardioCard.getCard())
+        CardInfoClient cardClient = new CardInfoClient(SmartCardIoCard.getCard())
         CardInfo cardInfo = cardClient.getCardInfo()
         ServiceDeliveryRequired required = new ServiceDeliveryRequired(
             getFidesmoAppId(),
@@ -149,7 +149,7 @@ class RecipeTask extends FidesmoBaseTask {
                            try {
                                if (cause.response.status >= 500) {
                                    def errorMessage = cause.response.body.in().text
-                                   new GradleException("The fidemo server aborted the operation with '${errorMessage}'", cause)
+                                   new GradleException("The fidesmo server aborted the operation with '${errorMessage}'", cause)
                                } else {
                                    cause
                                }

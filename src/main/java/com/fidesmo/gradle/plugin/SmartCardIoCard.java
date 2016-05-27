@@ -35,14 +35,14 @@ import jnasmartcardio.Smartcardio;
 import nordpol.IsoCard;
 import nordpol.OnCardErrorListener;
 
-public class SmartcardioCard implements IsoCard {
+public class SmartCardIoCard implements IsoCard {
 
     private Card card;
     private boolean openFlag = false;
     private int timeout = 15;
     private List<OnCardErrorListener> listeners = new ArrayList<OnCardErrorListener>();
 
-    public SmartcardioCard(Card card) {
+    public SmartCardIoCard(Card card) {
         this.card = card;
     }
 
@@ -121,7 +121,7 @@ public class SmartcardioCard implements IsoCard {
                 }
             }
 
-            return new LoggingCard(new SmartcardioCard(terminalsWithCard
+            return new LoggingCard(new SmartCardIoCard(terminalsWithCard
                                                        .get(0)
                                                        .connect("*")), writer);
         } catch (NoSuchAlgorithmException e) {
