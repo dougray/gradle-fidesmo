@@ -18,12 +18,19 @@
 package com.fidesmo.gradle.plugin;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
+import java.security.NoSuchAlgorithmException;
 
 import javax.smartcardio.Card;
 import javax.smartcardio.CardException;
 import javax.smartcardio.CommandAPDU;
+import javax.smartcardio.TerminalFactory;
+import javax.smartcardio.CardTerminal;
+import javax.smartcardio.CardTerminals;
+
+import jnasmartcardio.Smartcardio;
 
 import nordpol.IsoCard;
 import nordpol.OnCardErrorListener;
@@ -93,6 +100,35 @@ public class SmartcardioCard implements IsoCard {
             responses.add(transceive(command));
         }
         return responses;
+    }
+
+    public static IsoCard getCard() throws IOException {
+        return getCard(null);
+    }
+
+    public static IsoCard getCard(PrintWriter writer) throws IOException {
+        try {
+            TerminalFactory factory =
+                TerminalFactory.getInstance("PC/SC",null, new Smartcardio());
+            List<CardTerminal> terminalsWithCard =
+                factory.terminals().list(CardTerminals.State.CARD_PRESENT);
+
+            if (terminalsWithCard.size() == 0) {
+                if (factory.terminals().list().size() == 0) {
+                    throw new IOException("No terminals found");
+                } else {
+                    throw new IOException("No card found");
+                }
+            }
+
+            return new LoggingCard(new SmartcardioCard(terminalsWithCard
+                                                       .get(0)
+                                                       .connect("*")), writer);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("Error with jnassmartcardio", e);
+        } catch (CardException e) {
+            throw new IOException("Unable to get Smartcard", e);
+        }
     }
 
 }

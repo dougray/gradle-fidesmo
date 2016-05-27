@@ -39,7 +39,6 @@ import com.fidesmo.gradle.plugin.models.*
 class FidesmoPlugin implements Plugin<Project> {
 
     Logger logger = LoggerFactory.getLogger(this.getClass())
-
     public static final String FIDESMO_RID = '0xa0:0x00:0x00:0x06:0x17'
     public static final String FIDESMO_APP_ID = 'fidesmoAppId'
     public static final String FIDESMO_APP_KEY = 'fidesmoAppKey'
@@ -59,7 +58,7 @@ class FidesmoPlugin implements Plugin<Project> {
             FIDESMO_RID + ':' + serviceProviderAidSuffix.collect{ it }.collate(2).collect{ "0x${it.join()}" }.join(':')
         }
 
-        project.tasks.create("uploadExecutableLoadFile", OperationTask) {
+        project.tasks.create("uploadExecutableLoadFile", RecipeTask) {
             group = 'publish'
             description = 'Uploads the java card applet to the fidesmo executable load file storage for later installation'
             dependsOn(project.convertJavacard)
@@ -70,16 +69,11 @@ class FidesmoPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.create('deleteFromLocalCard', OperationTask) {
+        project.tasks.create('deleteFromLocalCard', RecipeTask) {
             group = 'publish'
             description = 'Deletes the executable load file from the fidesm card via a locally attached card reader'
-
             doLast {
-                // TODO: should be inputs of the task
-                def ccmDelete = new CcmDelete(application: jcExtension.cap.aid.hexString, withRelated: true)
-
-                def response = fidesmoService.deleteExecutableLoadFile('https://api.fidesmo.com/status', ccmDelete)
-                executeOperation(response.operationId)
+                executeDeleteRecipe(jcExtension.cap.aid.hexString)
             }
         }
 
@@ -98,21 +92,13 @@ class FidesmoPlugin implements Plugin<Project> {
                         applicationAid = jcExtension.cap.applets.first().aid.hexString
                     }
 
-                    // TODO: should be inputs of the task
-                    def ccmInstall = new CcmInstall(executableLoadFile: jcExtension.cap.aid.hexString,
-                                                    executableModule: jcExtension.cap.applets.first().aid.hexString,
-                                                    application: applicationAid,
-                                                    parameters: '',
-                                                    encryptLoad: encryptLoad)
-
-                    def response = fidesmoService.installExecutableLoadFile('https://api.fidesmo.com/status', ccmInstall)
-                    task.executeOperation(response.operationId)
+                    task.executeInstallRecipe(jcExtension.cap.aid.hexString, jcExtension.cap.applets.first().aid.hexString, applicationAid, encryptLoad)
                 }
             }
         }
 
-        project.tasks.create('installToLocalCard', OperationTask, installToLocalCard(true))
-        project.tasks.create('installToLocalCardUnencrypted', OperationTask, installToLocalCard(false))
+        project.tasks.create('installToLocalCard', RecipeTask, installToLocalCard(true))
+        project.tasks.create('installToLocalCardUnencrypted', RecipeTask, installToLocalCard(false))
 
         project.tasks.create('console') << {
             Console.run();
