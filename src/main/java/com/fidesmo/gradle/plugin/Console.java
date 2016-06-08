@@ -25,10 +25,7 @@ public class Console {
                                                  terminal);
         reader.setHandleUserInterrupt(true);
         PrintWriter out = new PrintWriter(reader.getOutput());
-        IsoCard card = (new SmartcardioTransceiver(out))
-            .getCard()
-            .toBlocking()
-            .first();
+        IsoCard card = SmartCardIoCard.getCard(out);
 
         String line;
         try {

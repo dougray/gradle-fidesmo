@@ -21,18 +21,19 @@ package com.fidesmo.gradle.plugin
 import retrofit.http.*
 import retrofit.client.Response
 import retrofit.mime.TypedFile
+import retrofit.mime.TypedInput
 import com.fidesmo.gradle.plugin.models.*
 
 public interface FidesmoService {
     @POST('/executableLoadFiles')
     ElfReceiveSuccess uploadExecutableLoadFile(@Body TypedFile file)
 
-    @PUT('/ccm/install')
-    OperationAccepted installExecutableLoadFile(@Header('callbackUrl') String callbackUrl, @Body CcmInstall install)
+    @PUT('/apps/{appId}/services/{serviceId}/recipe')
+    Response uploadDeleteRecipe(@Path("appId") String appId, @Path("serviceId") String serviceId, @Body DeleteRecipe recipe)
 
-    @PUT('/ccm/delete')
-    OperationAccepted deleteExecutableLoadFile(@Header('callbackUrl') String callbackUrl, @Body CcmDelete delete)
+    @PUT('/apps/{appId}/services/{serviceId}/recipe')
+    Response uploadInstallRecipe(@Path("appId") String appId, @Path("serviceId") String serviceId, @Body InstallRecipe recipe)
 
-    @GET('/status/{operationId}')
-    OperationResponse getStatus(@Path("operationId") UUID operationId)
+    @DELETE('/apps/{appId}/services/{serviceId}/recipe')
+    Response deleteServiceRecipe(@Path("appId") String appId, @Path("serviceId") String serviceId)
 }

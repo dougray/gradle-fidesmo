@@ -26,7 +26,9 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     compile 'com.fidesmo:gradle-javacard:0.2.6'
-    compile 'com.fidesmo:sec-client-core:0.1.26'
+    compile 'com.fidesmo:sec-client-core:0.2.2'
+    compile 'com.fidesmo:sec-client-delivery:0.2.2'
+    compile 'com.fidesmo:sec-client-local:0.2.2'
     compile 'io.github.jnasmartcardio:jnasmartcardio:0.2.4'
     compile 'jline:jline:2.13'
     runtime 'ch.qos.logback:logback-classic:1.1.3'
